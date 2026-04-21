@@ -1,0 +1,69 @@
+{
+  "workflows": [
+    {
+      "id": "c4dee532-2eb7-4e26-99ee-235347f1567d",
+      "nameV2": "Collect product information",
+      "type": "fetch_url",
+      "outputFormat": "text",
+      "prompt": "@[Question-1 Your product webpage URL](0bd1add4-6299-4866-a8c0-9dc06de112f5) "
+    },
+    {
+      "id": "9f2e8a1c-4b6d-4e7f-8a9b-1c2d3e4f5a6b",
+      "nameV2": "Extract product facts",
+      "type": "ai_prompt",
+      "outputFormat": "text",
+      "prompt": "You are a meticulous product analyst. The raw content below was fetched from a product webpage and may contain noise (navigation, footer, related products, reviews). Your job is to extract ONLY the facts that explicitly appear on this specific product page. Do NOT invent, infer, or generalize. If a field is not clearly stated on the page, output the literal string \"NOT FOUND\" for that field.\n\nRaw product page content:\n{{{ @[Step-1 Collect product information](c4dee532-2eb7-4e26-99ee-235347f1567d) }}}\n\nOutput a single JSON object with the following schema. Every string value must be either a direct quote (or a close paraphrase of a single phrase) from the page, or \"NOT FOUND\". Do not mix generic knowledge into the values.\n\n{\n  \"product_name\": \"...\",\n  \"brand\": \"...\",\n  \"price\": \"...\",\n  \"category_or_type\": \"...\",\n  \"short_description\": \"one sentence pulled from the page\",\n  \"key_features\": [\"feature phrase 1 from page\", \"feature phrase 2 from page\"],\n  \"specifications\": { \"spec_name\": \"exact spec value from page\" },\n  \"materials_or_build\": \"...\",\n  \"target_users_mentioned\": [\"who the page says this is for\"],\n  \"use_cases_explicitly_mentioned\": [\"verbatim use case 1\", \"verbatim use case 2\"],\n  \"unique_selling_points\": [\"quoted USP 1\", \"quoted USP 2\"],\n  \"warranty_or_support\": \"...\",\n  \"certifications_or_standards\": [\"...\"],\n  \"page_url\": \"...\"\n}\n\nStrict rules:\n- Every string value must come from the page text. No paraphrasing into generic marketing speak.\n- If a field is ambiguous or absent, use \"NOT FOUND\" (do not guess).\n- Arrays may be empty ([]) if nothing qualifies.\n- Output ONLY the JSON object. No commentary, no markdown fences, no explanation.",
+      "teamOutput": "team.context.product_facts",
+      "teamOutputDesc": "Structured product facts"
+    },
+    {
+      "id": "73002c51-496b-4e40-8ada-06fe072ef177",
+      "nameV2": "A study of scenario",
+      "type": "ai_prompt",
+      "outputFormat": "text",
+      "prompt": "You are a senior marketing researcher specializing in demand generation and SEO content strategy. You will design customer usage scenarios that are tightly anchored to THIS specific product — never generic scenarios that could apply to any similar product.\n\nYou are given a JSON of verified product facts. Every field is either a direct quote from the product page or the literal string \"NOT FOUND\". Treat \"NOT FOUND\" as unknown — never assume or invent.\n\nVerified product facts (ground truth):\n{{{ @[Step-2 Extract product facts](9f2e8a1c-4b6d-4e7f-8a9b-1c2d3e4f5a6b) }}}\n\n## HARD RULES (must follow; violations will be rejected)\n1. Produce EXACTLY 5 scenarios. Depth over breadth.\n2. Every scenario MUST cite at least TWO concrete facts from the JSON above. Each cited fact must be a direct quote of a field value (wrap in quotes). Put them in the \"Evidence from product page\" section.\n3. If a fact is \"NOT FOUND\" in the JSON, you MUST NOT reference, assume, or invent it. Never fabricate specs, prices, features, certifications, or claims.\n4. Scenario selection policy:\n   - At least 3 scenarios must be directly supported by \"use_cases_explicitly_mentioned\", \"target_users_mentioned\", or \"key_features\".\n   - Up to 2 scenarios may be long-tail or trending, but each such scenario must still be justified by explaining which existing feature/spec enables it.\n5. Personas must be realistic buyers of THIS product, not generic stock personas. Each persona needs a name, age range, role/lifestyle, and a concrete reason they would need this exact product.\n6. Article titles must contain the product name, brand, or a specific feature/spec/material from the JSON. No generic titles like \"Best pumps for your home\".\n7. Output language: English. Output format: clean Markdown.\n\n## OUTPUT FORMAT — repeat this block 5 times\n\n### Scenario N — <Short, specific title that references the product or a concrete feature>\n- **Actor / Persona**: <name, age range, role or lifestyle, why this product fits them>\n- **Goal / Motivation**: <what they want to achieve; must connect to a named feature>\n- **Context / Situation**: <when and where; be specific about environment and constraints>\n- **Outcome / Result**: <what happens after using THIS product; cite a feature that drives the outcome>\n- **Pain Points or Opportunities**: <the concrete gap solved by a specific feature, or an improvement opportunity>\n- **Evidence from product page** (required, minimum 2 items):\n  - \"<verbatim field value from JSON>\" — why it supports this scenario\n  - \"<verbatim field value from JSON>\" — why it supports this scenario\n- **3 SEO Article Ideas** (titles must contain product name / brand / or a concrete feature):\n  1. **Title**: <specific title> — **Description**: <1–2 sentences describing search intent and angle>\n  2. **Title**: ... — **Description**: ...\n  3. **Title**: ... — **Description**: ...\n\n## SELF-CHECK (perform silently before emitting output)\nFor each scenario, verify:\n(a) Evidence contains ≥ 2 direct quotes from JSON field values.\n(b) No invented specs, prices, or features.\n(c) Article titles are product-specific, not generic.\nIf any scenario fails, rewrite it before emitting. Do not explain the self-check in the final output.",
+      "teamOutput": "team.context.customer_scenario_strategist",
+      "teamOutputDesc": "Customer scenario strategist"
+    }
+  ],
+  "results": [
+    {
+      "type": "html",
+      "fields": [
+        "content"
+      ],
+      "items": {
+        "content": "73002c51-496b-4e40-8ada-06fe072ef177"
+      },
+      "metadata": {
+        "templateId": "deloitte-style-report"
+      }
+    }
+  ],
+  "userInputs": [
+    {
+      "id": "0bd1add4-6299-4866-a8c0-9dc06de112f5",
+      "type": "url",
+      "name": "Your product webpage URL (For Amazon URL, please click Connect and sign in with your Amazon account)",
+      "description": "",
+      "placeholder": "",
+      "required": true,
+      "teamInput": "team.input.productLink"
+    }
+  ],
+  "inputValues": {
+    "0bd1add4-6299-4866-a8c0-9dc06de112f5": [
+      "https://store.cleartidepump.com/products/cleartide-diaphragm-water-pump"
+    ]
+  },
+  "version": "1.0",
+  "metadata": {
+    "author": "jifeng Yang",
+    "createdAt": "2026-04-21T08:01:18.715Z"
+  },
+  "frequency": "604800000",
+  "workflowConnects": [
+    "https://chatgpt.com",
+    "https://www.perplexity.ai/"
+  ]
+}
